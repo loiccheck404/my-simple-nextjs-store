@@ -11,7 +11,7 @@ export default function Home() {
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-6">Featured Products</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.slice(0, 4).map((product) => (
+          {products.slice(0, 6).map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
