@@ -2,9 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+// Update the path below if your CartContext is in a different location
+import { useCart } from "@/contexts/CartContext";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { getTotalItems } = useCart();
+  const totalItems = getTotalItems();
 
   return (
     <header className="bg-background border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">
@@ -31,9 +35,14 @@ const Header: React.FC = () => {
             </Link>
             <Link
               href="/cart"
-              className="text-foreground hover:text-gray-600 transition-colors"
+              className="text-foreground hover:text-gray-600 transition-colors relative"
             >
               Cart
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold min-w-5 h-5 rounded-full flex items-center justify-center px-1">
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
             </Link>
             <Link
               href="/account"
@@ -103,10 +112,15 @@ const Header: React.FC = () => {
               </Link>
               <Link
                 href="/cart"
-                className="text-foreground hover:text-gray-600 transition-colors px-2 py-1"
+                className="text-foreground hover:text-gray-600 transition-colors px-2 py-1 relative inline-block"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Cart
+                {totalItems > 0 && (
+                  <span className="absolute -top-1 -right-8 bg-gradient-to-r from-blue-500 to-purple-600 text-white text-xs font-bold min-w-5 h-5 rounded-full flex items-center justify-center px-1">
+                    {totalItems > 99 ? "99+" : totalItems}
+                  </span>
+                )}
               </Link>
               <Link
                 href="/account"
