@@ -1,0 +1,19 @@
+Environment variables loaded from .env
+Running seed command `ts-node --compiler-options {"module":"CommonJS"} prisma/seed.ts` ...
+/home/loiccheck/my-simple-store/node_modules/.prisma/client/default.js:43
+    throw new Error('@prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.');
+          ^
+Error: @prisma/client did not initialize yet. Please run "prisma generate" and try to import it again.
+    at new PrismaClient (/home/loiccheck/my-simple-store/node_modules/.prisma/client/default.js:43:11)
+    at Object.<anonymous> (/home/loiccheck/my-simple-store/prisma/seed.ts:4:16)
+    at Module._compile (node:internal/modules/cjs/loader:1730:14)
+    at Module.m._compile (/home/loiccheck/my-simple-store/node_modules/ts-node/src/index.ts:1618:23)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1895:10)
+    at Object.require.extensions.<computed> [as .ts] (/home/loiccheck/my-simple-store/node_modules/ts-node/src/index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1465:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:1282:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:235:24)
+
+An error occurred while running the seed command:
+Error: Command failed with exit code 1: ts-node --compiler-options {"module":"CommonJS"} prisma/seed.ts
