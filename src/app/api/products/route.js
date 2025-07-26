@@ -1,30 +1,9 @@
 // Handles getting all products and creating new products
 import { NextResponse } from "next/server";
 import { verifyAuth, verifyAdmin } from "@/lib/auth"; // You'll create these helper functions
+import { products } from "../../../data/products";
 
 // Mock database - Replace with your actual database
-let products = [
-  {
-    id: 1,
-    name: "iPhone 15",
-    price: 999,
-    description: "Latest iPhone with amazing features",
-    image: "/images/iphone15.jpg",
-    category: "Electronics",
-    stock: 50,
-    createdAt: new Date(),
-  },
-  {
-    id: 2,
-    name: "Nike Air Max",
-    price: 120,
-    description: "Comfortable running shoes",
-    image: "/images/airmax.jpg",
-    category: "Footwear",
-    stock: 30,
-    createdAt: new Date(),
-  },
-];
 
 // GET all products (Public - anyone can view)
 export async function GET(request) {

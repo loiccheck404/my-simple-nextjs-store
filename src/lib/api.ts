@@ -57,7 +57,7 @@ class ApiClient {
 
   constructor(
     baseUrl: string = process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:3001/api"
+      "http://localhost:3000/api"
   ) {
     this.baseUrl = baseUrl;
     // Get token from localStorage on client side
@@ -160,7 +160,25 @@ class ApiClient {
     }
 
     const queryString = searchParams.toString();
-    return this.request(`/products${queryString ? `?${queryString}` : ""}`);
+    const response = await this.request<{
+      success: boolean;
+      data: {
+        products: Product[];
+        pagination: {
+          total: number;
+          pages: number;
+          page: number;
+          limit: number;
+        };
+      };
+    }>(`/products${queryString ? `?${queryString}` : ""}`);
+
+    // Transform the response to match expected structure
+    return {
+      products: response.data.products,
+      total: response.data.pagination.total,
+      pages: response.data.pagination.pages,
+    };
   }
 
   async getProduct(id: string): Promise<Product> {
