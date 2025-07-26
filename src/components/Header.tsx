@@ -7,8 +7,8 @@ import { useCart } from "@/contexts/CartContext";
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { getTotalItems } = useCart();
-  const totalItems = getTotalItems();
+  const { itemCount } = useCart();
+  const totalItems = itemCount;
 
   return (
     <header className="bg-background border-b border-gray-200 dark:border-gray-800 sticky top-0 z-50">

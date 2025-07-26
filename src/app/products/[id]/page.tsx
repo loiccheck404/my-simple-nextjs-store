@@ -24,7 +24,7 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ params }) => {
     notFound();
   }
 
-  // Pass product data to client component
+  //Pass product data to client component
   return <ProductDetailClient product={product} />;
 };
 

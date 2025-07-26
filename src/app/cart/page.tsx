@@ -5,14 +5,19 @@ import Link from "next/link";
 import { useCart } from "@/contexts/CartContext";
 
 export default function CartPage() {
-  const { state, removeItem, updateQuantity, clearCart } = useCart();
-  const { items, totalItems, totalPrice } = state;
+  const {
+    items,
+    itemCount, // Changed from totalItems
+    total, // Changed from totalPrice
+    removeFromCart, // Changed from removeItem
+    updateQuantity,
+    clearCart,
+  } = useCart();
 
   // Calculate savings if there are original prices
   const totalSavings = items.reduce((savings, item) => {
-    if (item.originalPrice) {
-      return savings + (item.originalPrice - item.price) * item.quantity;
-    }
+    // Note: Your CartItem type doesn't include originalPrice, so this will always be 0
+    // You may need to add originalPrice to your CartItem interface if you want this feature
     return savings;
   }, 0);
 
@@ -29,7 +34,7 @@ export default function CartPage() {
             shopping to fill it up!
           </p>
           <Link
-            href="/"
+            href="/products"
             className="inline-block bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105"
           >
             Continue Shopping
@@ -45,7 +50,7 @@ export default function CartPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Shopping Cart</h1>
         <p className="text-gray-400">
-          {totalItems} {totalItems === 1 ? "item" : "items"} in your cart
+          {itemCount} {itemCount === 1 ? "item" : "items"} in your cart
         </p>
       </div>
 
@@ -66,7 +71,7 @@ export default function CartPage() {
                     className="w-full h-full object-cover rounded-lg"
                   />
                 ) : (
-                  <span className="text-gray-400 text-sm">Image</span>
+                  <span className="text-gray-400 text-sm">No Image</span>
                 )}
               </div>
 
@@ -75,20 +80,17 @@ export default function CartPage() {
                 <h3 className="text-white font-semibold text-lg">
                   {item.name}
                 </h3>
-                <p className="text-gray-400 text-sm capitalize">
-                  {item.category}
+
+                {/* Product ID for reference */}
+                <p className="text-gray-400 text-sm">
+                  Product ID: {item.productId}
                 </p>
 
                 {/* Price */}
                 <div className="flex items-center gap-2">
                   <span className="text-blue-400 font-bold text-lg">
-                    ${item.price}
+                    ${item.price.toFixed(2)}
                   </span>
-                  {item.originalPrice && (
-                    <span className="text-gray-500 text-sm line-through">
-                      ${item.originalPrice}
-                    </span>
-                  )}
                 </div>
 
                 {/* Quantity Controls */}
@@ -96,7 +98,9 @@ export default function CartPage() {
                   <span className="text-gray-300 text-sm">Quantity:</span>
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      onClick={() =>
+                        updateQuantity(item.productId, item.quantity - 1)
+                      }
                       className="w-8 h-8 bg-gray-700 hover:bg-gray-600 text-white rounded-full flex items-center justify-center transition-colors"
                       disabled={item.quantity <= 1}
                     >
@@ -106,7 +110,9 @@ export default function CartPage() {
                       {item.quantity}
                     </span>
                     <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                      onClick={() =>
+                        updateQuantity(item.productId, item.quantity + 1)
+                      }
                       className="w-8 h-8 bg-gray-700 hover:bg-gray-600 text-white rounded-full flex items-center justify-center transition-colors"
                     >
                       +
@@ -123,7 +129,7 @@ export default function CartPage() {
                     </span>
                   </span>
                   <button
-                    onClick={() => removeItem(item.id)}
+                    onClick={() => removeFromCart(item.productId)}
                     className="border border-red-500/50 bg-red-500/10 hover:bg-red-500/20 hover:border-red-400 text-red-400 hover:text-red-300 text-sm font-medium px-3 py-1.5 rounded-lg transition-all duration-300 transform hover:scale-105 active:scale-95"
                   >
                     Remove
@@ -164,8 +170,8 @@ export default function CartPage() {
 
             <div className="space-y-3">
               <div className="flex justify-between text-gray-300">
-                <span>Subtotal ({totalItems} items)</span>
-                <span>${totalPrice.toFixed(2)}</span>
+                <span>Subtotal ({itemCount} items)</span>
+                <span>${total.toFixed(2)}</span>
               </div>
 
               {totalSavings > 0 && (
@@ -182,13 +188,13 @@ export default function CartPage() {
 
               <div className="flex justify-between text-gray-300">
                 <span>Tax</span>
-                <span>${(totalPrice * 0.08).toFixed(2)}</span>
+                <span>${(total * 0.08).toFixed(2)}</span>
               </div>
 
               <div className="border-t border-gray-700 pt-3">
                 <div className="flex justify-between text-white font-bold text-lg">
                   <span>Total</span>
-                  <span>${(totalPrice + totalPrice * 0.08).toFixed(2)}</span>
+                  <span>${(total + total * 0.08).toFixed(2)}</span>
                 </div>
               </div>
             </div>
@@ -200,7 +206,7 @@ export default function CartPage() {
               </button>
 
               <Link
-                href="/"
+                href="/products"
                 className="block w-full text-center border border-gray-600 hover:border-gray-500 text-gray-300 hover:text-white font-semibold py-3 px-6 rounded-lg transition-all duration-300"
               >
                 Continue Shopping

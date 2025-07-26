@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { CartProvider } from "@/contexts/CartContext";
+//import { NetworkStatus } from "@/components/LoadingSpinner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
