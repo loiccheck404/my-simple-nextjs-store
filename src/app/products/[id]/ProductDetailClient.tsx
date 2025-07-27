@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { products } from "@/data/products";
+import { useCart } from "@/contexts/CartContext";
 
 interface Product {
   id: string | number;
@@ -30,6 +31,9 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
   const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState<string>("");
   const [selectedSize, setSelectedSize] = useState<string>("");
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+
+  const { addToCart } = useCart();
 
   // Set default selections
   React.useEffect(() => {
@@ -41,14 +45,27 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
     }
   }, [product, selectedColor, selectedSize]);
 
-  const handleAddToCart = () => {
-    console.log("Adding to cart:", {
-      product,
-      quantity,
-      selectedColor,
-      selectedSize,
-    });
-    alert(`Added ${quantity} ${product.name} to cart!`);
+  const handleAddToCart = async () => {
+    setIsAddingToCart(true);
+    try {
+      await addToCart(
+        {
+          id: product.id.toString(),
+          name: product.name,
+          price: product.price,
+          image: product.image,
+        },
+        quantity
+      );
+
+      // Show success message
+      alert(`Added ${quantity} ${product.name} to cart!`);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add item to cart. Please try again.");
+    } finally {
+      setIsAddingToCart(false);
+    }
   };
 
   const renderStars = (rating: number) => {
@@ -176,7 +193,8 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 Description
               </h3>
               <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                {product.description}
+                {product.description ||
+                  "No description available for this product."}
               </p>
             </div>
 
@@ -236,8 +254,8 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 border border-gray-300 dark:border-gray-600 rounded-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800"
-                  disabled={product.inStock === false}
+                  className="w-10 h-10 border border-gray-300 dark:border-gray-600 rounded-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
+                  disabled={product.inStock === false || quantity <= 1}
                 >
                   -
                 </button>
@@ -246,7 +264,7 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 </span>
                 <button
                   onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 border border-gray-300 dark:border-gray-600 rounded-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800"
+                  className="w-10 h-10 border border-gray-300 dark:border-gray-600 rounded-md flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50"
                   disabled={product.inStock === false}
                 >
                   +
@@ -258,15 +276,17 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
             <div className="space-y-3">
               <button
                 onClick={handleAddToCart}
-                disabled={product.inStock === false}
+                disabled={product.inStock === false || isAddingToCart}
                 className={`w-full py-3 px-6 rounded-lg font-semibold text-lg transition-colors ${
-                  product.inStock !== false
+                  product.inStock !== false && !isAddingToCart
                     ? "bg-blue-600 hover:bg-blue-700 text-white"
                     : "bg-gray-400 text-gray-600 cursor-not-allowed"
                 }`}
               >
-                {product.inStock !== false
-                  ? `Add to Cart - $${(product.price * quantity).toFixed(2)}`
+                {isAddingToCart
+                  ? "Adding to Cart..."
+                  : product.inStock !== false
+                  ? `Add to Cart - ${(product.price * quantity).toFixed(2)}`
                   : "Out of Stock"}
               </button>
 
@@ -336,8 +356,9 @@ const ProductDetailClient: React.FC<ProductDetailClientProps> = ({
                 <Link
                   key={relatedProduct.id}
                   href={`/products/${relatedProduct.id}`}
+                  className="block"
                 >
-                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 hover:shadow-md transition-shadow">
+                  <div className="bg-white dark:bg-gray-800 rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer">
                     <div className="aspect-square bg-gray-100 dark:bg-gray-700 rounded-lg mb-2 overflow-hidden">
                       <Image
                         src={relatedProduct.image}
