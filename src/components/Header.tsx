@@ -142,6 +142,33 @@ const Header: React.FC = () => {
             </Link>
 
             <Link
+              href="/checkout"
+              className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
+                isActivePage("/checkout")
+                  ? "text-blue-600 bg-blue-50 dark:bg-blue-900/20"
+                  : "text-foreground hover:text-blue-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+              }`}
+            >
+              <svg
+                className="h-5 w-5 mb-1"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                />
+              </svg>
+              <span className="text-xs">Checkout</span>
+              {isActivePage("/checkout") && (
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"></div>
+              )}
+            </Link>
+
+            <Link
               href="/account"
               className={`flex flex-col items-center p-2 rounded-lg transition-colors ${
                 isActivePage("/account")
