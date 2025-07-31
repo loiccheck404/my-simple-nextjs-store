@@ -90,5 +90,3 @@ export const config = {
     "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
-// omo i be naija oh
-// omo i be naija oh again 

@@ -37,16 +37,23 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      {
-        userId: user.id,
-        email: user.email,
-        name: user.name,
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
-    );
+    // Generate JWT token with proper typing
+    const payload = {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    };
+
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      throw new Error("JWT_SECRET is not defined");
+    }
+
+    const options: jwt.SignOptions = {
+      expiresIn: (process.env.JWT_EXPIRES_IN as string) || "7d",
+    };
+
+    const token = jwt.sign(payload, secret, options);
 
     // Remove password hash from response
     const userResponse = {
