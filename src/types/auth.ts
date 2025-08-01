@@ -4,6 +4,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  phone?: string;
   avatar?: string;
   role?: "user" | "admin";
   createdAt?: string;
@@ -33,6 +34,12 @@ export interface GuestCheckoutData {
   phoneNumber?: string;
   firstName?: string;
   lastName?: string;
+  street: string;
+  apartment?: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
 }
 
 export interface ShippingAddress {
