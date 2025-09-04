@@ -1,5 +1,5 @@
 // Handles adding items to cart
-import pool from /@/lib/db.js
+import { NextResponse } from "next/server";
 export async function POST(request) {
   try {
     const authResult = await verifyAuth(request);

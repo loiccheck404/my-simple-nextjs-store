@@ -1,9 +1,6 @@
 // Handles getting user's cart
 // Mock cart storage (in real app, this would be in database)
-import { NextRequest, NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/auth-middleware";
-import { prisma } from "@/lib/prisma";
-
+import { NextResponse } from "next/server";
 // GET user's cart
 export async function GET(request) {
   try {

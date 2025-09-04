@@ -1,8 +1,6 @@
 // Mock orders storage
 // Handles getting user orders and creating new orders
 import { NextRequest, NextResponse } from "next/server";
-import { verifyAuth } from "@/lib/auth-middleware";
-
 // Mock order storage (in production, use a database)
 const orders = new Map();
 
@@ -84,3 +82,7 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+function verifyAuth(request: NextRequest) {
+  throw new Error("Function not implemented.");
+}
+
