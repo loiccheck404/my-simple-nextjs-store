@@ -1,6 +1,7 @@
-import NextAuth from "next-auth";
-import { authOptions } from "@/lib/auth";
+// Remove database adapter
+// adapter: PrismaAdapter(prisma), // Remove this line
 
-const handler = NextAuth(authOptions);
-
-export { handler as GET, handler as POST };
+// Add JWT strategy
+session: {
+  strategy: 'jwt'
+}
