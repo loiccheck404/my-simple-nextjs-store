@@ -1,10 +1,6 @@
 // lib/api.ts - Centralized API client with error handling and data revalidation
-
-export interface ApiResponse<T> {
-  data: T | null;
-  error: string | null;
-  loading: boolean;
-}
+// lib/api.ts - Static API client using mock data
+import { products } from "@/data/products";
 
 export interface Product {
   id: string;
@@ -19,126 +15,8 @@ export interface Product {
   stock?: number;
 }
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-  avatar?: string;
-}
-
-export interface CartItem {
-  id: string;
-  productId: string;
-  quantity: number;
-  price: number;
-  name: string;
-  image?: string;
-}
-
-export interface Order {
-  id: string;
-  userId: string;
-  items: CartItem[];
-  total: number;
-  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
-  createdAt: string;
-  shippingAddress: {
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  };
-}
-
-class ApiClient {
-  private baseUrl: string;
-  private token: string | null = null;
-
-  constructor(
-    baseUrl: string = process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:3000/api"
-  ) {
-    this.baseUrl = baseUrl;
-    // Get token from localStorage on client side
-    if (typeof window !== "undefined") {
-      this.token = localStorage.getItem("auth_token");
-    }
-  }
-
-  private async request<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const config: RequestInit = {
-      headers: {
-        "Content-Type": "application/json",
-        ...(this.token && { Authorization: `Bearer ${this.token}` }),
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    try {
-      const response = await fetch(url, config);
-
-      if (!response.ok) {
-        // Handle different HTTP status codes
-        switch (response.status) {
-          case 401:
-            // Unauthorized - clear token and redirect to login
-            this.clearAuth();
-            throw new Error("Session expired. Please login again.");
-          case 403:
-            throw new Error("Access denied.");
-          case 404:
-            throw new Error("Resource not found.");
-          case 429:
-            throw new Error("Too many requests. Please try again later.");
-          case 500:
-            throw new Error("Server error. Please try again later.");
-          default:
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(
-              errorData.message ||
-                `HTTP ${response.status}: ${response.statusText}`
-            );
-        }
-      }
-
-      // Handle empty responses (204 No Content)
-      if (response.status === 204) {
-        return {} as T;
-      }
-
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error("Network error. Please check your connection.");
-    }
-  }
-
-  // Authentication methods
-  setToken(token: string) {
-    this.token = token;
-    if (typeof window !== "undefined") {
-      localStorage.setItem("auth_token", token);
-    }
-  }
-
-  clearAuth() {
-    this.token = null;
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user");
-    }
-  }
-
+// Static implementation using mock data
+class StaticApiClient {
   // Products API
   async getProducts(params?: {
     category?: string;
@@ -150,185 +28,113 @@ class ApiClient {
     page?: number;
     limit?: number;
   }): Promise<{ products: Product[]; total: number; pages: number }> {
-    const searchParams = new URLSearchParams();
-    if (params) {
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined) {
-          searchParams.append(key, value.toString());
+    
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    let filteredProducts = [...products];
+
+    // Apply filters
+    if (params?.category) {
+      filteredProducts = filteredProducts.filter(
+        (product) => product.category.toLowerCase() === params.category?.toLowerCase()
+      );
+    }
+
+    if (params?.search) {
+      const searchLower = params.search.toLowerCase();
+      filteredProducts = filteredProducts.filter(
+        (product) =>
+          product.name.toLowerCase().includes(searchLower) ||
+          product.description?.toLowerCase().includes(searchLower) ||
+          product.category.toLowerCase().includes(searchLower)
+      );
+    }
+
+    if (params?.minPrice || params?.maxPrice) {
+      filteredProducts = filteredProducts.filter((product) => {
+        const price = product.price;
+        const min = params?.minPrice || 0;
+        const max = params?.maxPrice || Infinity;
+        return price >= min && price <= max;
+      });
+    }
+
+    // Apply sorting
+    if (params?.sortBy) {
+      filteredProducts.sort((a, b) => {
+        let aValue: any, bValue: any;
+        
+        switch (params.sortBy) {
+          case "price":
+            aValue = a.price;
+            bValue = b.price;
+            break;
+          case "name":
+            aValue = a.name.toLowerCase();
+            bValue = b.name.toLowerCase();
+            break;
+          case "rating":
+            aValue = a.rating || 0;
+            bValue = b.rating || 0;
+            break;
+          default:
+            aValue = a.name.toLowerCase();
+            bValue = b.name.toLowerCase();
+        }
+
+        if (params?.sortOrder === "desc") {
+          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+        } else {
+          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
         }
       });
     }
 
-    const queryString = searchParams.toString();
-    const response = await this.request<{
-      success: boolean;
-      data: {
-        products: Product[];
-        pagination: {
-          total: number;
-          pages: number;
-          page: number;
-          limit: number;
-        };
-      };
-    }>(`/products${queryString ? `?${queryString}` : ""}`);
+    // Apply pagination
+    const page = params?.page || 1;
+    const limit = params?.limit || 10;
+    const total = filteredProducts.length;
+    const pages = Math.ceil(total / limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
-    // Transform the response to match expected structure
     return {
-      products: response.data.products,
-      total: response.data.pagination.total,
-      pages: response.data.pagination.pages,
+      products: paginatedProducts,
+      total,
+      pages,
     };
   }
 
   async getProduct(id: string): Promise<Product> {
-    return this.request(`/products/${id}`);
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const product = products.find(p => p.id === id);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+    return product;
   }
 
   async searchProducts(query: string): Promise<Product[]> {
-    return this.request(`/products/search?q=${encodeURIComponent(query)}`);
-  }
-
-  // User Authentication API
-  async login(
-    email: string,
-    password: string
-  ): Promise<{ user: User; token: string }> {
-    const result = await this.request<{ user: User; token: string }>(
-      "/auth/login",
-      {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      }
-    );
-
-    this.setToken(result.token);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("user", JSON.stringify(result.user));
-    }
-
-    return result;
-  }
-
-  async register(
-    email: string,
-    password: string,
-    name: string
-  ): Promise<{ user: User; token: string }> {
-    const result = await this.request<{ user: User; token: string }>(
-      "/auth/register",
-      {
-        method: "POST",
-        body: JSON.stringify({ email, password, name }),
-      }
-    );
-
-    this.setToken(result.token);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("user", JSON.stringify(result.user));
-    }
-
-    return result;
-  }
-
-  async logout(): Promise<void> {
-    try {
-      await this.request("/auth/logout", { method: "POST" });
-    } finally {
-      this.clearAuth();
-    }
-  }
-
-  async getProfile(): Promise<User> {
-    return this.request("/auth/profile");
-  }
-
-  async updateProfile(data: Partial<User>): Promise<User> {
-    return this.request("/auth/profile", {
-      method: "PUT",
-      body: JSON.stringify(data),
-    });
-  }
-
-  // Cart API (for server-side cart sync)
-  async getCart(): Promise<CartItem[]> {
-    return this.request("/cart");
-  }
-
-  async addToCart(
-    productId: string,
-    quantity: number = 1
-  ): Promise<CartItem[]> {
-    return this.request("/cart", {
-      method: "POST",
-      body: JSON.stringify({ productId, quantity }),
-    });
-  }
-
-  async updateCartItem(
-    productId: string,
-    quantity: number
-  ): Promise<CartItem[]> {
-    return this.request(`/cart/${productId}`, {
-      method: "PUT",
-      body: JSON.stringify({ quantity }),
-    });
-  }
-
-  async removeFromCart(productId: string): Promise<CartItem[]> {
-    return this.request(`/cart/${productId}`, {
-      method: "DELETE",
-    });
-  }
-
-  async clearCart(): Promise<void> {
-    return this.request("/cart", {
-      method: "DELETE",
-    });
-  }
-
-  // Orders API
-  async createOrder(orderData: {
-    items: CartItem[];
-    shippingAddress: Order["shippingAddress"];
-    paymentMethod: string;
-  }): Promise<Order> {
-    return this.request("/orders", {
-      method: "POST",
-      body: JSON.stringify(orderData),
-    });
-  }
-
-  async getOrders(): Promise<Order[]> {
-    return this.request("/orders");
-  }
-
-  async getOrder(id: string): Promise<Order> {
-    return this.request(`/orders/${id}`);
-  }
-
-  // Reviews API
-  async getProductReviews(productId: string): Promise<any[]> {
-    return this.request(`/products/${productId}/reviews`);
-  }
-
-  async addReview(
-    productId: string,
-    rating: number,
-    comment: string
-  ): Promise<any> {
-    return this.request(`/products/${productId}/reviews`, {
-      method: "POST",
-      body: JSON.stringify({ rating, comment }),
-    });
+    const result = await this.getProducts({ search: query });
+    return result.products;
   }
 }
 
 // Create singleton instance
-export const api = new ApiClient();
+export const api = new StaticApiClient();
 
-// Custom hooks for data fetching with error handling and loading states
+// Custom hooks for data fetching (updated for static data)
 import { useState, useEffect, useCallback } from "react";
+
+export interface ApiResponse<T> {
+  data: T | null;
+  error: string | null;
+  loading: boolean;
+}
 
 export function useApi<T>(
   apiCall: () => Promise<T>,
@@ -348,7 +154,6 @@ export function useApi<T>(
       const errorMessage =
         err instanceof Error ? err.message : "An error occurred";
       setError(errorMessage);
-      console.error("API Error:", err);
     } finally {
       setLoading(false);
     }
@@ -366,35 +171,6 @@ export function useApi<T>(
   };
 }
 
-// Mutation hook for POST/PUT/DELETE operations
-export function useApiMutation<T, P = any>() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const mutate = useCallback(
-    async (
-      apiCall: (params: P) => Promise<T>
-    ): Promise<{ data: T | null; error: string | null }> => {
-      try {
-        setLoading(true);
-        setError(null);
-        const data = await apiCall({} as P);
-        return { data, error: null };
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "An error occurred";
-        setError(errorMessage);
-        return { data: null, error: errorMessage };
-      } finally {
-        setLoading(false);
-      }
-    },
-    []
-  );
-
-  return { mutate, loading, error };
-}
-
 // Specific hooks for common operations
 export function useProducts(filters?: Parameters<typeof api.getProducts>[0]) {
   return useApi(() => api.getProducts(filters), [JSON.stringify(filters)]);
@@ -402,12 +178,4 @@ export function useProducts(filters?: Parameters<typeof api.getProducts>[0]) {
 
 export function useProduct(id: string) {
   return useApi(() => api.getProduct(id), [id]);
-}
-
-export function useOrders() {
-  return useApi(() => api.getOrders(), []);
-}
-
-export function useProfile() {
-  return useApi(() => api.getProfile(), []);
 }
