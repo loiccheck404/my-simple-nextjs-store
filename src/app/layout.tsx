@@ -20,7 +20,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "My Store",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", type: "image/x-icon" }, // fallback
+    ],
     shortcut: "/favicon-16x16.png",
     apple: "/apple-touch-icon.png",
   },
