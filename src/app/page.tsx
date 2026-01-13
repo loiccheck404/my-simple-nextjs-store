@@ -146,7 +146,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-900/20 to-purple-900/20"></div>
           <div className="relative z-10">
             <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-blue-400 to-red-500 bg-clip-text text-transparent">
-              Welcome to My Stores!
+              CHECK - ITZ !
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
               Discover premium quality products with the CITZ standard. From

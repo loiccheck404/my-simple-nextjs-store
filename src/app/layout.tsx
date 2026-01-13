@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   title: "My Store",
   icons: {
     icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon2.jpeg", type: "image/jpeg+xml" },
       { url: "/favicon.ico", type: "image/x-icon" }, // fallback
     ],
     shortcut: "/favicon-16x16.png",
