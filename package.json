@@ -22,7 +22,7 @@
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.526.0",
     "magic-string": "^0.30.18",
-    "next": "15.4.2",
+    "next": "15.4.10",
     "next-auth": "^4.24.11",
     "pg": "^8.16.3",
     "react": "19.1.0",
